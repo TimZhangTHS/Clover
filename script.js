@@ -46,6 +46,8 @@ const logoMarquee = document.getElementById("logo-marquee");
 const logoFolder = "acceptance-logos";
 const imagePattern = /\.(png|jpe?g|webp|gif|svg)$/i;
 const extensionPriority = { ".png": 4, ".webp": 3, ".jpg": 2, ".jpeg": 2, ".gif": 1, ".svg": 1 };
+let logoTickerFrame = null;
+let logoResizeHandler = null;
 
 function dedupeBySchoolName(entries) {
   const bestByStem = new Map();
@@ -90,6 +92,15 @@ function renderLogoMarquee(logoUrls) {
     return;
   }
 
+  if (logoTickerFrame) {
+    cancelAnimationFrame(logoTickerFrame);
+    logoTickerFrame = null;
+  }
+  if (logoResizeHandler) {
+    window.removeEventListener("resize", logoResizeHandler);
+    logoResizeHandler = null;
+  }
+
   if (!logoUrls.length) {
     logoMarquee.innerHTML = "<p class=\"logo-empty\">Acceptance logos will appear here.</p>";
     return;
@@ -99,13 +110,73 @@ function renderLogoMarquee(logoUrls) {
   const track = document.createElement("div");
   track.className = "logo-track";
 
-  uniqueUrls.forEach((url) => {
-    track.appendChild(createLogoImage(url));
+  const nodes = uniqueUrls.map((url) => {
+    const node = document.createElement("div");
+    node.className = "logo-node";
+    node.appendChild(createLogoImage(url));
+    track.appendChild(node);
+    return node;
   });
-
-  const seconds = Math.max(16, uniqueUrls.length * 2.2);
-  track.style.setProperty("--logo-duration", `${seconds}s`);
   logoMarquee.replaceChildren(track);
+
+  if (uniqueUrls.length <= 1) {
+    return;
+  }
+
+  const gap = 14;
+  const speedPxPerSecond = 72;
+  let states = [];
+  let lastTime = performance.now();
+
+  function initializePositions() {
+    let nextX = logoMarquee.clientWidth;
+    states = nodes.map((node) => {
+      const width = node.getBoundingClientRect().width;
+      const state = { node, width, x: nextX };
+      nextX += width + gap;
+      return state;
+    });
+  }
+
+  function applyPositions() {
+    states.forEach((item) => {
+      item.node.style.left = `${item.x}px`;
+    });
+  }
+
+  initializePositions();
+  applyPositions();
+
+  function step(now) {
+    const elapsed = (now - lastTime) / 1000;
+    lastTime = now;
+
+    states.forEach((item) => {
+      item.x -= speedPxPerSecond * elapsed;
+    });
+
+    states.forEach((item) => {
+      if (item.x + item.width < 0) {
+        const maxRight = states.reduce((maxValue, current) => {
+          if (current === item) {
+            return maxValue;
+          }
+          return Math.max(maxValue, current.x + current.width);
+        }, 0);
+        item.x = Math.max(maxRight + gap, logoMarquee.clientWidth);
+      }
+    });
+
+    applyPositions();
+    logoTickerFrame = requestAnimationFrame(step);
+  }
+
+  logoResizeHandler = () => {
+    initializePositions();
+    applyPositions();
+  };
+  window.addEventListener("resize", logoResizeHandler);
+  logoTickerFrame = requestAnimationFrame(step);
 }
 
 async function fetchLogosFromGitHubFolder() {
