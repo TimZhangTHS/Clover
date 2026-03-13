@@ -45,6 +45,21 @@ tick();
 const logoMarquee = document.getElementById("logo-marquee");
 const logoFolder = "acceptance-logos";
 const imagePattern = /\.(png|jpe?g|webp|gif|svg)$/i;
+const extensionPriority = { ".png": 4, ".webp": 3, ".jpg": 2, ".jpeg": 2, ".gif": 1, ".svg": 1 };
+
+function dedupeBySchoolName(entries) {
+  const bestByStem = new Map();
+  for (const entry of entries) {
+    const stem = entry.name.replace(/\.[^.]+$/, "").toLowerCase().trim();
+    const ext = (entry.name.match(/\.[^.]+$/)?.[0] || "").toLowerCase();
+    const score = extensionPriority[ext] || 0;
+    const existing = bestByStem.get(stem);
+    if (!existing || score > existing.score) {
+      bestByStem.set(stem, { ...entry, score });
+    }
+  }
+  return Array.from(bestByStem.values()).map((item) => item.url);
+}
 
 function getGitHubRepoFromPage() {
   if (!window.location.hostname.endsWith("github.io")) {
@@ -110,10 +125,10 @@ async function fetchLogosFromGitHubFolder() {
     return [];
   }
 
-  return files
-    .filter((file) => file && imagePattern.test(file.name || ""))
-    .map((file) => file.download_url)
-    .filter(Boolean);
+  const entries = files
+    .filter((file) => file && imagePattern.test(file.name || "") && file.download_url)
+    .map((file) => ({ name: file.name, url: file.download_url }));
+  return dedupeBySchoolName(entries);
 }
 
 async function fetchLogosFromDirectoryListing() {
@@ -126,11 +141,12 @@ async function fetchLogosFromDirectoryListing() {
   const doc = new DOMParser().parseFromString(html, "text/html");
   const links = Array.from(doc.querySelectorAll("a"));
 
-  return links
+  const entries = links
     .map((link) => link.getAttribute("href") || "")
     .map((href) => href.split("/").pop() || "")
     .filter((name) => imagePattern.test(name))
-    .map((name) => `./${logoFolder}/${name}`);
+    .map((name) => ({ name, url: `./${logoFolder}/${name}` }));
+  return dedupeBySchoolName(entries);
 }
 
 async function loadAcceptanceLogos() {
