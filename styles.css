@@ -199,19 +199,71 @@ h2 {
   font-size: clamp(1.4rem, 3vw, 2rem);
 }
 
-.logo-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.65rem;
+.logo-marquee {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.7rem 0;
+  overflow: hidden;
+  position: relative;
+  min-height: 92px;
 }
 
-.logo-pill {
+.logo-track {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: max-content;
+  animation: logo-scroll 36s linear infinite;
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding-right: 0.8rem;
+}
+
+.logo-item {
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 0.65rem;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  background: #fff;
+  padding: 0.35rem;
+}
+
+.logo-help code {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+}
+
+.logo-empty {
+  margin: 0;
+  padding: 1.25rem;
   text-align: center;
-  color: #dde2ef;
-  font-size: 0.86rem;
+  color: #d7dcea;
+}
+
+@keyframes logo-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.logo-track:hover {
+  animation-play-state: paused;
+}
+
+.logo-help {
+  margin-top: 0.75rem;
   background: rgba(255, 255, 255, 0.02);
 }
 
@@ -301,7 +353,8 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
-  .logo-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .logo-item {
+    width: 60px;
+    height: 60px;
   }
 }
