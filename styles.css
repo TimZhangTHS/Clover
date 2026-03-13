@@ -201,12 +201,38 @@ h2 {
 
 .logo-marquee {
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 0.7rem 0;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  padding: 0.8rem 0;
   overflow: hidden;
   position: relative;
-  min-height: 92px;
+  min-height: 178px;
+}
+
+.logo-marquee::before,
+.logo-marquee::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 46px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.logo-marquee::before {
+  left: 0;
+  background: linear-gradient(90deg, rgba(12, 15, 21, 1), rgba(12, 15, 21, 0));
+}
+
+.logo-marquee::after {
+  right: 0;
+  background: linear-gradient(270deg, rgba(12, 15, 21, 1), rgba(12, 15, 21, 0));
+}
+
+.logo-lane {
+  margin: 0.2rem 0;
+  overflow: hidden;
 }
 
 .logo-track {
@@ -214,7 +240,12 @@ h2 {
   align-items: center;
   gap: 0.8rem;
   width: max-content;
-  animation: logo-scroll 36s linear infinite;
+  animation: logo-scroll 40s linear infinite;
+}
+
+.logo-track.reverse {
+  animation-direction: reverse;
+  animation-duration: 48s;
 }
 
 .logo-row {
@@ -226,25 +257,18 @@ h2 {
 
 .logo-item {
   border: 1px solid var(--line);
-  border-radius: 10px;
-  width: 72px;
-  height: 72px;
+  border-radius: 9px;
+  width: 78px;
+  height: 78px;
   object-fit: contain;
   background: #fff;
-  padding: 0.35rem;
-}
-
-.logo-help code {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0.1rem 0.35rem;
+  padding: 0.32rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .logo-empty {
   margin: 0;
-  padding: 1.25rem;
+  padding: 1.6rem;
   text-align: center;
   color: #d7dcea;
 }
@@ -260,11 +284,6 @@ h2 {
 
 .logo-track:hover {
   animation-play-state: paused;
-}
-
-.logo-help {
-  margin-top: 0.75rem;
-  background: rgba(255, 255, 255, 0.02);
 }
 
 .acceptance-list {
@@ -354,7 +373,7 @@ textarea:focus {
   }
 
   .logo-item {
-    width: 60px;
-    height: 60px;
+    width: 62px;
+    height: 62px;
   }
 }

@@ -76,23 +76,37 @@ function renderLogoMarquee(logoUrls) {
   }
 
   if (!logoUrls.length) {
-    logoMarquee.innerHTML = "<p class=\"logo-empty\">Drop logo images into the acceptance-logos folder.</p>";
+    logoMarquee.innerHTML = "<p class=\"logo-empty\">Acceptance logos will appear here.</p>";
     return;
   }
 
-  const enoughForLoop = logoUrls.length >= 8 ? logoUrls : [...logoUrls, ...logoUrls, ...logoUrls];
-  const track = document.createElement("div");
-  track.className = "logo-track";
+  const enoughForLoop = logoUrls.length >= 10 ? logoUrls : [...logoUrls, ...logoUrls, ...logoUrls];
+  const midpoint = Math.ceil(enoughForLoop.length / 2);
+  const rowA = enoughForLoop.slice(0, midpoint);
+  const rowB = enoughForLoop.slice(midpoint);
 
-  const firstRow = document.createElement("div");
-  firstRow.className = "logo-row";
-  enoughForLoop.forEach((url) => firstRow.appendChild(createLogoImage(url)));
+  function buildLane(urls, reverse = false) {
+    const lane = document.createElement("div");
+    lane.className = "logo-lane";
 
-  const secondRow = firstRow.cloneNode(true);
-  track.appendChild(firstRow);
-  track.appendChild(secondRow);
+    const track = document.createElement("div");
+    track.className = reverse ? "logo-track reverse" : "logo-track";
 
-  logoMarquee.replaceChildren(track);
+    const primaryRow = document.createElement("div");
+    primaryRow.className = "logo-row";
+    urls.forEach((url) => primaryRow.appendChild(createLogoImage(url)));
+
+    const duplicateRow = primaryRow.cloneNode(true);
+    track.appendChild(primaryRow);
+    track.appendChild(duplicateRow);
+
+    lane.appendChild(track);
+    return lane;
+  }
+
+  const firstLane = buildLane(rowA, false);
+  const secondLane = buildLane(rowB.length ? rowB : rowA, true);
+  logoMarquee.replaceChildren(firstLane, secondLane);
 }
 
 async function fetchLogosFromGitHubFolder() {
