@@ -45,7 +45,6 @@ tick();
 const logoMarquee = document.getElementById("logo-marquee");
 const logoFolder = "acceptance-logos";
 const imagePattern = /\.(png|jpe?g|webp|gif|svg)$/i;
-let logoRotationTimer = null;
 
 function getGitHubRepoFromPage() {
   if (!window.location.hostname.endsWith("github.io")) {
@@ -76,34 +75,22 @@ function renderLogoMarquee(logoUrls) {
     return;
   }
 
-  if (logoRotationTimer) {
-    clearInterval(logoRotationTimer);
-    logoRotationTimer = null;
-  }
-
   if (!logoUrls.length) {
     logoMarquee.innerHTML = "<p class=\"logo-empty\">Acceptance logos will appear here.</p>";
     return;
   }
 
-  let currentIndex = 0;
-  const image = createLogoImage(logoUrls[currentIndex]);
-  image.classList.add("logo-current");
-  logoMarquee.replaceChildren(image);
+  const uniqueUrls = Array.from(new Set(logoUrls));
+  const track = document.createElement("div");
+  track.className = "logo-track";
 
-  if (logoUrls.length === 1) {
-    return;
-  }
+  uniqueUrls.forEach((url) => {
+    track.appendChild(createLogoImage(url));
+  });
 
-  logoRotationTimer = setInterval(() => {
-    image.classList.add("logo-fading");
-
-    setTimeout(() => {
-      currentIndex = (currentIndex + 1) % logoUrls.length;
-      image.src = logoUrls[currentIndex];
-      image.classList.remove("logo-fading");
-    }, 220);
-  }, 2200);
+  const seconds = Math.max(16, uniqueUrls.length * 2.2);
+  track.style.setProperty("--logo-duration", `${seconds}s`);
+  logoMarquee.replaceChildren(track);
 }
 
 async function fetchLogosFromGitHubFolder() {
