@@ -45,6 +45,7 @@ tick();
 const logoMarquee = document.getElementById("logo-marquee");
 const logoFolder = "acceptance-logos";
 const imagePattern = /\.(png|jpe?g|webp|gif|svg)$/i;
+let logoRotationTimer = null;
 
 function getGitHubRepoFromPage() {
   if (!window.location.hostname.endsWith("github.io")) {
@@ -75,38 +76,34 @@ function renderLogoMarquee(logoUrls) {
     return;
   }
 
+  if (logoRotationTimer) {
+    clearInterval(logoRotationTimer);
+    logoRotationTimer = null;
+  }
+
   if (!logoUrls.length) {
     logoMarquee.innerHTML = "<p class=\"logo-empty\">Acceptance logos will appear here.</p>";
     return;
   }
 
-  const enoughForLoop = logoUrls.length >= 10 ? logoUrls : [...logoUrls, ...logoUrls, ...logoUrls];
-  const midpoint = Math.ceil(enoughForLoop.length / 2);
-  const rowA = enoughForLoop.slice(0, midpoint);
-  const rowB = enoughForLoop.slice(midpoint);
+  let currentIndex = 0;
+  const image = createLogoImage(logoUrls[currentIndex]);
+  image.classList.add("logo-current");
+  logoMarquee.replaceChildren(image);
 
-  function buildLane(urls, reverse = false) {
-    const lane = document.createElement("div");
-    lane.className = "logo-lane";
-
-    const track = document.createElement("div");
-    track.className = reverse ? "logo-track reverse" : "logo-track";
-
-    const primaryRow = document.createElement("div");
-    primaryRow.className = "logo-row";
-    urls.forEach((url) => primaryRow.appendChild(createLogoImage(url)));
-
-    const duplicateRow = primaryRow.cloneNode(true);
-    track.appendChild(primaryRow);
-    track.appendChild(duplicateRow);
-
-    lane.appendChild(track);
-    return lane;
+  if (logoUrls.length === 1) {
+    return;
   }
 
-  const firstLane = buildLane(rowA, false);
-  const secondLane = buildLane(rowB.length ? rowB : rowA, true);
-  logoMarquee.replaceChildren(firstLane, secondLane);
+  logoRotationTimer = setInterval(() => {
+    image.classList.add("logo-fading");
+
+    setTimeout(() => {
+      currentIndex = (currentIndex + 1) % logoUrls.length;
+      image.src = logoUrls[currentIndex];
+      image.classList.remove("logo-fading");
+    }, 220);
+  }, 2200);
 }
 
 async function fetchLogosFromGitHubFolder() {
