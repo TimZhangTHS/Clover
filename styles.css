@@ -58,8 +58,13 @@ body {
   gap: 0.45rem;
 }
 
-.brand-mark {
-  font-size: 0.8rem;
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #fff;
+  padding: 3px;
 }
 
 .nav-links {
